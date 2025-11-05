@@ -1,14 +1,56 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+// Mock user credentials with roles
+const mockUsers = [
+  { email: 'admin@automobile.com', password: 'admin123', role: 'admin', name: 'Admin User' },
+  { email: 'customer@automobile.com', password: 'customer123', role: 'customer', name: 'Customer User' },
+  { email: 'employee@automobile.com', password: 'employee123', role: 'employee', name: 'Employee User' },
+];
+
 const LoginPage = () => {
+  const router = useRouter();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     const formData = new FormData(e.target);
-    const email = formData.get('email');
-    const password = formData.get('password');
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
     
-    console.log('Login attempt:', { email, password });
-    // Add your login logic here
+    // Simulate authentication
+    setTimeout(() => {
+      const user = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (user) {
+        // Store user info in localStorage
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        // Redirect based on role
+        switch (user.role) {
+          case 'admin':
+            router.push('/admin/dashboard');
+            break;
+          case 'customer':
+            router.push('/customer/dashboard');
+            break;
+          case 'employee':
+            router.push('/employee/dashboard');
+            break;
+          default:
+            router.push('/');
+        }
+      } else {
+        setError('Invalid email or password');
+        setLoading(false);
+      }
+    }, 500);
   };
 
   return (
@@ -20,6 +62,12 @@ const LoginPage = () => {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
           <input
             type="email"
             name="email"
@@ -38,11 +86,20 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white font-semibold py-2 rounded-full hover:bg-gray-800 transition"
+            disabled={loading}
+            className="w-full bg-gray-900 text-white font-semibold py-2 rounded-full hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            SIGN IN
+            {loading ? 'SIGNING IN...' : 'SIGN IN'}
           </button>
         </form>
+
+        {/* Demo credentials info */}
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-left">
+          <p className="font-semibold text-blue-900 mb-1">Demo Credentials:</p>
+          <p className="text-blue-800">Admin: admin@automobile.com / admin123</p>
+          <p className="text-blue-800">Customer: customer@automobile.com / customer123</p>
+          <p className="text-blue-800">Employee: employee@automobile.com / employee123</p>
+        </div>
 
         <div className="mt-6">
           <div className="relative">
