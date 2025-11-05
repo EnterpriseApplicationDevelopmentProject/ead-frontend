@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Eye } from 'lucide-react';
-import { appointmentService, customerService } from '@/api/mockApiService';
+import { Calendar, Clock, Car, CheckCircle, XCircle, Plus, Trash2 } from 'lucide-react';
+import { appointmentApi, dashboardApi } from '@/lib/api/services';
 import type { Appointment, Customer } from '@/types';
 
 export default function MyAppointments() {
@@ -20,25 +20,66 @@ export default function MyAppointments() {
   const loadAppointments = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
+      
+      const customerId = dashboardApi.getCurrentCustomerId();
+      if (!customerId) {
+        throw new Error('Customer ID not found. Please log in again.');
+      }
 
-      // Import mock appointments
-      const { mockAppointments } = await import('@/data/mockData');
-      setAppointments(mockAppointments);
+      const [customerData, appointmentsData] = await Promise.all([
+        dashboardApi.getCustomerProfile(customerId),
+        appointmentApi.getAllAppointments(customerId)
+      ]);
+      
+      setCustomer(customerData);
+      
+      // Map AppointmentResponse to Appointment type
+      const mappedAppointments = appointmentsData.map((apt: any) => ({
+        id: apt.id,
+        customerId: apt.customerId,
+        customerName: apt.customerName,
+        vehicleId: apt.vehicleId,
+        vehicleNumber: apt.vehicleInfo || apt.vehicleNumber || 'N/A',
+        vehicleModel: apt.vehicleModel,
+        serviceName: apt.serviceName,
+        appointmentTime: apt.appointmentTime || apt.appointmentDate,
+        date: apt.appointmentDate,
+        time: apt.timeSlot || apt.time,
+        status: apt.status,
+        assignedEmployee: apt.assignedEmployee,
+        employeeName: apt.employeeName,
+        notes: apt.notes,
+        customerNotes: apt.customerNotes,
+        tasks: apt.tasks,
+        estimatedDurationMinutes: apt.estimatedDurationMinutes,
+        createdAt: apt.createdAt
+      }));
+      
+      setAppointments(mappedAppointments);
     } catch (error) {
       console.error('Failed to load appointments:', error);
+      alert('Failed to load appointments. Please ensure you are logged in.');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       month: 'short',
       day: 'numeric',
       year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateTimeString: string | undefined) => {
+    if (!dateTimeString) return 'N/A';
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit'
     });
   };
 
@@ -238,11 +279,11 @@ export default function MyAppointments() {
                       <div className="text-sm text-gray-900">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          {formatDate(appointment.date)}
+                          {formatDate(appointment.appointmentTime || appointment.date)}
                         </div>
                         <div className="flex items-center gap-2 mt-1 text-gray-600">
                           <Clock className="w-4 h-4 text-gray-400" />
-                          {appointment.time}
+                          {formatTime(appointment.appointmentTime) || appointment.time}
                         </div>
                       </div>
                     </td>
@@ -253,11 +294,21 @@ export default function MyAppointments() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => alert('View appointment details')}
-                        className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to delete this appointment?')) {
+                            try {
+                              await appointmentApi.deleteAppointment(appointment.id);
+                              // Reload appointments after delete
+                              loadAppointments();
+                            } catch (error) {
+                              console.error('Failed to delete appointment:', error);
+                              alert('Failed to delete appointment. Please try again.');
+                            }
+                          }
+                        }}
+                        className="text-red-600 hover:text-red-900 flex items-center gap-1"
                       >
-                        <Eye className="w-4 h-4" />
-                        View
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </td>
                   </tr>

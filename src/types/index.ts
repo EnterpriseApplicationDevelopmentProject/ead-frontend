@@ -4,16 +4,18 @@
 
 // Customer Types
 export interface Customer {
-  id: string;
+  id: number;
   name: string;
   firstName?: string;
   lastName?: string;
   email: string;
-  phone: string;
+  phone?: string;
+  phoneNumber?: string;
   address?: string;
   nic?: string;
   password?: string;
-  joinedDate: string;
+  joinedDate?: string;
+  createdAt?: string;
 }
 
 // Vehicle Types
@@ -30,36 +32,55 @@ export interface Vehicle {
 // Appointment Types (Pre-defined Services)
 export interface Appointment {
   id: string;
-  customerId: string;
-  vehicleId: string;
+  customerId: number;
+  customerName?: string;
+  vehicleId: number;
   vehicleNumber: string;
+  vehicleModel?: string;
   serviceName: string;
-  date: string;
-  time: string;
-  status: 'Upcoming' | 'Completed' | 'Cancelled';
+  appointmentTime?: string;
+  date?: string;
+  time?: string;
+  status: string;
   assignedEmployee?: string;
+  employeeName?: string;
   approvedBy?: string;
   notes?: string;
+  customerNotes?: string;
+  tasks?: string[];
+  estimatedDurationMinutes?: number;
+  createdAt?: string;
 }
 
 // Project Types (Custom Services)
 export interface Project {
   id: string;
-  customerId: string;
-  vehicleId: string;
+  customerId: number;
+  customerName?: string;
+  vehicleId: number;
   vehicleNumber: string;
+  vehicleModel?: string;
   vehicleType: string;
   taskName: string;
   description: string;
+  serviceDescription?: string;
   startDate: string;
   estimatedEndDate?: string;
   completedDate?: string;
   time: string;
-  status: 'Pending' | 'Ongoing' | 'Completed' | 'Cancelled';
+  status: string;
   assignedEmployee?: string;
+  employeeName?: string;
   approvedBy?: string;
   estimatedCost?: number;
+  estimatedDurationDays?: number;
   notes?: string;
+  adminNotes?: string;
+  employeeNotes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  assignedAt?: string;
+  completedAt?: string;
 }
 
 // Dashboard Stats

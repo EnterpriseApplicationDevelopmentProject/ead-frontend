@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User } from 'lucide-react';
-import { dashboardService, customerService, appointmentService, projectService } from '@/api/mockApiService';
+import { dashboardApi, appointmentApi, projectApi } from '@/lib/api/services';
 import type { Customer, Appointment, Project, DashboardStats } from '@/types';
 
 export default function CustomerDashboard() {
@@ -19,31 +19,49 @@ export default function CustomerDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
+      
+      // Get customer ID from localStorage
+      const customerId = dashboardApi.getCurrentCustomerId();
+      if (!customerId) {
+        throw new Error('Customer ID not found. Please log in again.');
+      }
 
-      const [statsData, appointmentsData, projectsData] = await Promise.all([
-        dashboardService.getDashboardStats(customerData.id),
-        appointmentService.getUpcomingAppointments(customerData.id),
-        projectService.getOngoingProjects(customerData.id)
+      const [customerData, statsData, appointmentsData, projectsData] = await Promise.all([
+        dashboardApi.getCustomerProfile(customerId),
+        dashboardApi.getDashboardStats(customerId),
+        dashboardApi.getUpcomingAppointments(customerId),
+        dashboardApi.getOngoingProjects(customerId)
       ]);
 
+      setCustomer(customerData);
       setStats(statsData);
       setUpcomingAppointments(appointmentsData);
       setOngoingProjects(projectsData);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      // Show error message to user
+      alert('Failed to load dashboard data. Please ensure you are logged in and the backend is running.');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric',
       year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateTimeString: string | undefined) => {
+    if (!dateTimeString) return 'N/A';
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit'
     });
   };
 
@@ -161,16 +179,16 @@ export default function CustomerDashboard() {
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>{formatDate(appointment.date)}</span>
+                      <span>{formatDate(appointment.appointmentTime || appointment.date)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-gray-400" />
-                      <span>{appointment.time}</span>
+                      <span>{formatTime(appointment.appointmentTime) || appointment.time}</span>
                     </div>
-                    {appointment.assignedEmployee && (
+                    {(appointment.employeeName || appointment.assignedEmployee) && (
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-gray-400" />
-                        <span>{appointment.assignedEmployee}</span>
+                        <span>{appointment.employeeName || appointment.assignedEmployee}</span>
                       </div>
                     )}
                   </div>
@@ -209,10 +227,10 @@ export default function CustomerDashboard() {
                       <h3 className="text-lg font-semibold text-gray-800 mb-1">
                         {project.taskName}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-2">{project.description}</p>
+                      <p className="text-sm text-gray-500 mb-2">{project.description || project.serviceDescription}</p>
                       <p className="text-sm text-gray-600 flex items-center gap-2">
                         <Car className="w-4 h-4" />
-                        {project.vehicleNumber} - {project.vehicleType}
+                        {project.vehicleNumber} {project.vehicleType && `- ${project.vehicleType}`}
                       </p>
                     </div>
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(project.status)}`}>
@@ -223,18 +241,18 @@ export default function CustomerDashboard() {
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>Started: {formatDate(project.startDate)}</span>
+                      <span>Started: {formatDate(project.startDate || project.createdAt)}</span>
                     </div>
-                    {project.assignedEmployee && (
+                    {(project.employeeName || project.assignedEmployee) && (
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-gray-400" />
-                        <span>{project.assignedEmployee}</span>
+                        <span>{project.employeeName || project.assignedEmployee}</span>
                       </div>
                     )}
                     {project.estimatedCost && (
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-green-500" />
-                        <span className="font-semibold text-green-600">${project.estimatedCost}</span>
+                        <span className="font-semibold text-green-600">${project.estimatedCost.toFixed(2)}</span>
                       </div>
                     )}
                   </div>

@@ -316,6 +316,27 @@ export const appointmentApi = {
       throw error;
     }
   },
+
+  // GET /api/appointments/customer/{customerId} - Get all customer appointments
+  getAllAppointments: async (customerId: string): Promise<AppointmentResponse[]> => {
+    try {
+      const response = await apiClient.get(`/appointments/customer/${customerId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all appointments:', handleApiError(error));
+      throw error;
+    }
+  },
+
+  // DELETE /api/appointments/{appointmentId} - Delete appointment
+  deleteAppointment: async (appointmentId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/appointments/${appointmentId}`);
+    } catch (error) {
+      console.error('Error deleting appointment:', handleApiError(error));
+      throw error;
+    }
+  },
 };
 
 // ==================== VEHICLE API ====================
@@ -374,6 +395,68 @@ export const vehicleApi = {
       await apiClient.delete(`/customer/vehicles/${id}`);
     } catch (error) {
       console.error('Error deleting vehicle:', handleApiError(error));
+      throw error;
+    }
+  },
+};
+
+// ==================== PROJECT API ====================
+// Maps to ProjectController.java (Customer Projects)
+export interface ProjectResponse {
+  id: string;
+  customerId: number;
+  customerName?: string;
+  vehicleId: number;
+  vehicleNumber: string;
+  vehicleModel?: string;
+  vehicleType: string;
+  taskName: string;
+  description: string;
+  serviceDescription?: string;
+  startDate: string;
+  time: string;
+  status: string;
+  assignedEmployee?: string;
+  employeeName?: string;
+  estimatedCost?: number;
+  estimatedDurationDays?: number;
+  adminNotes?: string;
+  employeeNotes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  assignedAt?: string;
+  completedAt?: string;
+}
+
+export const projectApi = {
+  // GET /api/projects/customer/{customerId} - Get all customer projects
+  getAllProjects: async (customerId: string): Promise<ProjectResponse[]> => {
+    try {
+      const response = await apiClient.get(`/projects/customer/${customerId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all projects:', handleApiError(error));
+      throw error;
+    }
+  },
+
+  // GET /api/projects/customer/{customerId}/completed - Get completed projects
+  getCompletedProjects: async (customerId: string): Promise<ProjectResponse[]> => {
+    try {
+      const response = await apiClient.get(`/projects/customer/${customerId}/completed`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching completed projects:', handleApiError(error));
+      throw error;
+    }
+  },
+
+  // DELETE /api/projects/{projectId} - Delete project
+  deleteProject: async (projectId: string): Promise<void> => {
+    try {
+      await apiClient.delete(`/projects/${projectId}`);
+    } catch (error) {
+      console.error('Error deleting project:', handleApiError(error));
       throw error;
     }
   },
@@ -445,25 +528,34 @@ export const authApi = {
 };
 
 // ==================== DASHBOARD API ====================
-// Maps to CustomerDashboardController.java (Member 5 - dilusha)
+// Maps to DashboardController.java (Customer Dashboard)
 export const dashboardApi = {
-  // GET /api/customer/dashboard - Get customer dashboard data
-  getDashboardData: async () => {
+  // GET /api/dashboard/stats/{customerId} - Get dashboard statistics
+  getDashboardStats: async (customerId: string) => {
     try {
-      const response = await apiClient.get('/customer/dashboard');
+      const response = await apiClient.get(`/dashboard/stats/${customerId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching dashboard data:', handleApiError(error));
+      console.error('Error fetching dashboard stats:', handleApiError(error));
       throw error;
     }
   },
 
-  // GET /api/customer/dashboard/upcoming-appointments
-  getUpcomingAppointments: async (limit: number = 5) => {
+  // GET /api/dashboard/profile/{customerId} - Get customer profile
+  getCustomerProfile: async (customerId: string) => {
     try {
-      const response = await apiClient.get('/customer/dashboard/upcoming-appointments', {
-        params: { limit },
-      });
+      const response = await apiClient.get(`/dashboard/profile/${customerId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching customer profile:', handleApiError(error));
+      throw error;
+    }
+  },
+
+  // GET /api/dashboard/appointments/upcoming/{customerId} - Get upcoming appointments
+  getUpcomingAppointments: async (customerId: string) => {
+    try {
+      const response = await apiClient.get(`/dashboard/appointments/upcoming/${customerId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching upcoming appointments:', handleApiError(error));
@@ -471,16 +563,28 @@ export const dashboardApi = {
     }
   },
 
-  // GET /api/customer/dashboard/recent-services
-  getRecentServices: async (limit: number = 5) => {
+  // GET /api/dashboard/projects/ongoing/{customerId} - Get ongoing projects
+  getOngoingProjects: async (customerId: string) => {
     try {
-      const response = await apiClient.get('/customer/dashboard/recent-services', {
-        params: { limit },
-      });
+      const response = await apiClient.get(`/dashboard/projects/ongoing/${customerId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching recent services:', handleApiError(error));
+      console.error('Error fetching ongoing projects:', handleApiError(error));
       throw error;
+    }
+  },
+
+  // Helper methods for customer ID management
+  getCurrentCustomerId: (): string | null => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('customerId');
+    }
+    return null;
+  },
+
+  setCurrentCustomerId: (customerId: string): void => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('customerId', customerId);
     }
   },
 };
@@ -490,6 +594,7 @@ export default {
   service: serviceApi,
   appointment: appointmentApi,
   vehicle: vehicleApi,
+  project: projectApi,
   progress: progressApi,
   auth: authApi,
   dashboard: dashboardApi,
