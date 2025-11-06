@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User } from 'lucide-react';
-import { dashboardService, customerService, appointmentService, projectService } from '@/api/mockApiService';
-import type { Customer, Appointment, Project, DashboardStats } from '@/types';
+import { useAuth } from '@/app/context/AuthContext';
+import { appointmentService } from '@/lib/api/appointmentService';
+import { projectService } from '@/lib/api/projectService';
+import type { Appointment, Project, DashboardStats } from '@/types';
 
 export default function CustomerDashboard() {
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
@@ -14,23 +16,35 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const customerData = await customerService.getProfile();
-      setCustomer(customerData);
+      const customerId = user?.id || '';
 
-      const [statsData, appointmentsData, projectsData] = await Promise.all([
-        dashboardService.getDashboardStats(customerData.id),
-        appointmentService.getUpcomingAppointments(customerData.id),
-        projectService.getOngoingProjects(customerData.id)
+      // Fetch all relevant data in parallel
+      const [allAppointments, allProjects] = await Promise.all([
+        customerId ? appointmentService.getCustomerAppointments(customerId) : appointmentService.getAllAppointments(),
+        customerId ? projectService.getCustomerProjects(customerId) : projectService.getAllProjects()
       ]);
 
-      setStats(statsData);
-      setUpcomingAppointments(appointmentsData);
-      setOngoingProjects(projectsData);
+      // Derive dashboard stats and sections
+      const upcoming = allAppointments.filter(a => String(a.status).toLowerCase() === 'upcoming');
+      const ongoing = allProjects.filter(p => String(p.status).toLowerCase() === 'ongoing');
+
+      setUpcomingAppointments(upcoming);
+      setOngoingProjects(ongoing);
+
+      const computedStats: DashboardStats = {
+        totalVehicles: 0,
+        upcomingAppointments: upcoming.length,
+        ongoingProjects: ongoing.length,
+        completedAppointments: allAppointments.filter(a => String(a.status).toLowerCase() === 'completed').length,
+        completedProjects: allProjects.filter(p => String(p.status).toLowerCase() === 'completed').length,
+      };
+      setStats(computedStats);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
@@ -78,7 +92,7 @@ export default function CustomerDashboard() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {customer?.name}!</h1>
+        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.name || user?.email || 'Customer'}!</h1>
         <p className="text-gray-600">Here's what's happening with your vehicles and services</p>
       </div>
 
