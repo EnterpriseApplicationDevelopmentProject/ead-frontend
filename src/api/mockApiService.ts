@@ -23,9 +23,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || (process.env.NODE_ENV =
 
 async function callApi(path: string, options?: RequestInit) {
   const base = API_BASE || '';
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
 
   const res = await fetch(`${base}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...defaultHeaders, ...(options?.headers as Record<string, string> || {}) },
     ...options,
   });
 
@@ -183,9 +191,7 @@ export const projectService = {
     const dtos = await callApi(`/api/projects`);
     if (!Array.isArray(dtos)) throw new Error('Invalid projects response from server');
     const raw = dtos as Array<Record<string, unknown>>;
-    const mapped = raw.map(mapDtoToProject);
-    const hasCustomer = raw.some(d => d['customerId'] !== undefined && d['customerId'] !== null && String(d['customerId']).length > 0);
-    return hasCustomer ? mapped.filter((p: Project) => p.customerId === customerId) : mapped;
+    return raw.map(mapDtoToProject);
   },
 
   async getOngoingProjects(customerId: string): Promise<Project[]> {
@@ -193,10 +199,7 @@ export const projectService = {
     if (!Array.isArray(dtos)) throw new Error('Invalid projects response from server');
     const raw = dtos as Array<Record<string, unknown>>;
     const mapped = raw.map(mapDtoToProject);
-    const hasCustomer = raw.some(d => d['customerId'] !== undefined && d['customerId'] !== null && String(d['customerId']).length > 0);
-    return hasCustomer
-      ? mapped.filter((p: Project) => p.customerId === customerId && p.status === 'Ongoing')
-      : mapped.filter((p: Project) => p.status === 'Ongoing');
+    return mapped.filter((p: Project) => p.status === 'Ongoing');
   },
 
   async getCompletedProjects(customerId: string): Promise<Project[]> {
@@ -204,10 +207,7 @@ export const projectService = {
     if (!Array.isArray(dtos)) throw new Error('Invalid projects response from server');
     const raw = dtos as Array<Record<string, unknown>>;
     const mapped = raw.map(mapDtoToProject);
-    const hasCustomer = raw.some(d => d['customerId'] !== undefined && d['customerId'] !== null && String(d['customerId']).length > 0);
-    return hasCustomer
-      ? mapped.filter((p: Project) => p.customerId === customerId && p.status === 'Completed')
-      : mapped.filter((p: Project) => p.status === 'Completed');
+    return mapped.filter((p: Project) => p.status === 'Completed');
   },
 
   async getProjectById(projectId: string): Promise<Project | undefined> {
