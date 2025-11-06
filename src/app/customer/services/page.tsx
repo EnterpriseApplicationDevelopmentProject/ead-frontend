@@ -477,7 +477,7 @@ export default function VehicleServicesPage() {
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                   <a 
-                    href={`/services/${service.id}`}
+                    href={`/customer/services/${service.id}`}
                     className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-center"
                   >
                     Details

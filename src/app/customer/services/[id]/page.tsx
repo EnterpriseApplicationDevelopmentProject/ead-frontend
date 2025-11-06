@@ -73,7 +73,7 @@ export default function ServiceDetailPage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Service Not Found</h2>
           <p className="text-gray-600 mb-6">{error || 'The requested service could not be found.'}</p>
           <button
-            onClick={() => router.push('/services')}
+            onClick={() => router.push('/customer/services')}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Services
@@ -103,7 +103,7 @@ export default function ServiceDetailPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <button
-          onClick={() => router.push('/services')}
+          onClick={() => router.push('/customer/services')}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
