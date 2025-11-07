@@ -9,7 +9,10 @@ import type { DashboardStats } from '@/types/dashboard.types';
 
 export default function CustomerDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [requestingAppointments, setRequestingAppointments] = useState<Appointment[]>([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [requestingProjects, setRequestingProjects] = useState<Project[]>([]);
+  const [upcomingProjects, setUpcomingProjects] = useState<Project[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,17 +32,42 @@ export default function CustomerDashboard() {
       // Fetch dashboard data in parallel
       const [statsData, appointmentsData, projectsData] = await Promise.all([
         dashboardService.getDashboardStats(),
-        dashboardService.getUpcomingAppointments(undefined, 4),
-        dashboardService.getOngoingProjects(undefined, 4)
+        appointmentService.getAllAppointments(),
+        projectService.getAllProjects()
       ]);
 
       console.log('Dashboard stats:', statsData); // Debug log
-      console.log('Upcoming appointments:', appointmentsData); // Debug log
-      console.log('Ongoing projects:', projectsData); // Debug log
+      console.log('All appointments:', appointmentsData); // Debug log
+      console.log('All projects:', projectsData); // Debug log
+
+      // Filter appointments by status
+      const requesting = appointmentsData.filter(apt => 
+        apt.status.toLowerCase() === 'requesting'
+      ).slice(0, 4);
+      
+      const upcoming = appointmentsData.filter(apt => 
+        apt.status.toLowerCase() === 'assigned'
+      ).slice(0, 4);
+
+      // Filter projects by status
+      const requestingProj = projectsData.filter(proj => 
+        proj.status.toLowerCase() === 'requesting'
+      ).slice(0, 4);
+      
+      const upcomingProj = projectsData.filter(proj => 
+        proj.status.toLowerCase() === 'assigned'
+      ).slice(0, 4);
+      
+      const ongoing = projectsData.filter(proj => 
+        proj.status.toLowerCase() === 'in_progress' || proj.status.toLowerCase() === 'in progress'
+      ).slice(0, 4);
 
       setStats(statsData);
-      setUpcomingAppointments(appointmentsData);
-      setOngoingProjects(projectsData);
+      setRequestingAppointments(requesting);
+      setUpcomingAppointments(upcoming);
+      setRequestingProjects(requestingProj);
+      setUpcomingProjects(upcomingProj);
+      setOngoingProjects(ongoing);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       setError('Failed to load dashboard data. Please try again later.');
@@ -178,6 +206,60 @@ export default function CustomerDashboard() {
         </div>
       </div>
 
+      {/* Requesting Appointments Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Requesting Appointments</h2>
+          <a href="/customer/my-appointments" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            View All →
+          </a>
+        </div>
+        
+        {requestingAppointments.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600">No requesting appointments</p>
+            <a href="/customer/my-appointments/book" className="inline-block mt-3 text-blue-600 hover:text-blue-800 font-medium">
+              Book an Appointment
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {requestingAppointments.map((appointment) => (
+              <div key={appointment.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {appointment.serviceName}
+                      </h3>
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Car className="w-4 h-4" />
+                        {appointment.vehicleNumber}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(appointment.status)}`}>
+                      {appointment.status}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>{formatDate(appointment.date)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      <span>{appointment.time}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Upcoming Appointments Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -231,6 +313,120 @@ export default function CustomerDashboard() {
           </div>
         )}
 
+      </div>
+
+      {/* Requesting Projects Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Requesting Projects</h2>
+          <a href="/customer/my-projects" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            View All →
+          </a>
+        </div>
+        
+        {requestingProjects.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600">No requesting projects</p>
+            <a href="/customer/my-projects" className="inline-block mt-3 text-blue-600 hover:text-blue-800 font-medium">
+              Create a Project
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {requestingProjects.map((project) => (
+              <div key={project.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {project.taskName}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-2">{project.description}</p>
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Car className="w-4 h-4" />
+                        {project.vehicleNumber} - {project.vehicleType}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(project.status)}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>Started: {formatDate(project.startDate)}</span>
+                    </div>
+                    {project.endDate && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>End: {formatDate(project.endDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upcoming Projects Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Upcoming Projects</h2>
+          <a href="/customer/my-projects" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            View All →
+          </a>
+        </div>
+        
+        {upcomingProjects.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <Briefcase className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-600">No upcoming projects</p>
+            <a href="/customer/my-projects" className="inline-block mt-3 text-blue-600 hover:text-blue-800 font-medium">
+              Create a Project
+            </a>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {upcomingProjects.map((project) => (
+              <div key={project.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {project.taskName}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-2">{project.description}</p>
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <Car className="w-4 h-4" />
+                        {project.vehicleNumber} - {project.vehicleType}
+                      </p>
+                    </div>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(project.status)}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span>Started: {formatDate(project.startDate)}</span>
+                    </div>
+                    {project.endDate && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <span>End: {formatDate(project.endDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Ongoing Projects Section */}

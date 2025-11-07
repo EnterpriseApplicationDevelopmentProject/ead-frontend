@@ -9,7 +9,7 @@ export default function MyAppointments() {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'requesting' | 'upcoming' | 'completed' | 'cancelled'>('all');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,16 +62,15 @@ export default function MyAppointments() {
   const filteredAppointments = appointments.filter(apt => {
     const status = apt.status.toLowerCase();
     if (activeTab === 'all') return true;
+    if (activeTab === 'requesting') return status === 'requesting';
     if (activeTab === 'upcoming') return status === 'assigned';
     if (activeTab === 'completed') return status === 'completed';
     if (activeTab === 'cancelled') return status === 'cancelled';
     return true;
   });
 
-  const upcomingCount = appointments.filter(a => {
-    const status = a.status.toLowerCase();
-    return status === 'assigned';
-  }).length;
+  const requestingCount = appointments.filter(a => a.status.toLowerCase() === 'requesting').length;
+  const upcomingCount = appointments.filter(a => a.status.toLowerCase() === 'assigned').length;
   const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
   const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
 
@@ -129,7 +128,19 @@ export default function MyAppointments() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Requesting</p>
+              <p className="text-3xl font-bold text-yellow-600">{requestingCount}</p>
+            </div>
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -180,6 +191,16 @@ export default function MyAppointments() {
               }`}
             >
               All ({appointments.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('requesting')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'requesting'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Requesting ({requestingCount})
             </button>
             <button
               onClick={() => setActiveTab('upcoming')}
@@ -246,6 +267,7 @@ export default function MyAppointments() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     {activeTab === 'all' && 'No appointments found'}
+                    {activeTab === 'requesting' && 'No requesting appointments'}
                     {activeTab === 'upcoming' && 'No upcoming appointments'}
                     {activeTab === 'completed' && 'No completed appointments'}
                     {activeTab === 'cancelled' && 'No cancelled appointments'}
