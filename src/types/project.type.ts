@@ -4,11 +4,11 @@
  */
 
 export enum ProjectStatus {
-  PLANNED = 'PLANNED',
+  REQUESTING = 'REQUESTING',
+  ASSIGNED = 'ASSIGNED',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-  ON_HOLD = 'ON_HOLD'
+  CANCELLED = 'CANCELLED'
 }
 
 export interface ProjectDTO {

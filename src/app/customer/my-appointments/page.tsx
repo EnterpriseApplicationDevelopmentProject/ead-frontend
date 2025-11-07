@@ -43,12 +43,15 @@ export default function MyAppointments() {
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'upcoming':
+      case 'requesting':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'assigned':
         return 'bg-blue-100 text-blue-800';
       case 'in progress':
-        return 'bg-yellow-100 text-yellow-800';
+      case 'in_progress':
+        return 'bg-orange-100 text-orange-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -59,7 +62,7 @@ export default function MyAppointments() {
   const filteredAppointments = appointments.filter(apt => {
     const status = apt.status.toLowerCase();
     if (activeTab === 'all') return true;
-    if (activeTab === 'upcoming') return status === 'upcoming' || status === 'pending' || status === 'approved';
+    if (activeTab === 'upcoming') return status === 'assigned';
     if (activeTab === 'completed') return status === 'completed';
     if (activeTab === 'cancelled') return status === 'cancelled';
     return true;
@@ -67,7 +70,7 @@ export default function MyAppointments() {
 
   const upcomingCount = appointments.filter(a => {
     const status = a.status.toLowerCase();
-    return status === 'upcoming' || status === 'pending' || status === 'approved';
+    return status === 'assigned';
   }).length;
   const completedCount = appointments.filter(a => a.status.toLowerCase() === 'completed').length;
   const cancelledCount = appointments.filter(a => a.status.toLowerCase() === 'cancelled').length;
@@ -305,8 +308,8 @@ export default function MyAppointments() {
                         {(() => {
                           const statusLower = appointment.status.toLowerCase();
                           
-                          // Cancel button - show ONLY for upcoming/pending/approved appointments
-                          if (['upcoming', 'pending', 'approved'].includes(statusLower)) {
+                          // Cancel button - show ONLY for REQUESTING status (before assignment)
+                          if (statusLower === 'requesting') {
                             return (
                               <button
                                 onClick={() => handleCancel(appointment.id)}

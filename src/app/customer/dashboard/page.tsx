@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User, RefreshCw } from 'lucide-react';
+import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User, RefreshCw, XCircle } from 'lucide-react';
 import { dashboardService } from '@/lib/api/dashboardService';
 import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
 import { projectService, type Project } from '@/lib/api/projectService';
@@ -66,15 +66,15 @@ export default function CustomerDashboard() {
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
+      case 'requesting':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'assigned':
+        return 'bg-blue-100 text-blue-800';
+      case 'in progress':
+      case 'in_progress':
+        return 'bg-orange-100 text-orange-800';
       case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'upcoming':
-      case 'pending':
-      case 'approved':
-        return 'bg-blue-100 text-blue-800';
-      case 'ongoing':
-      case 'in progress':
-        return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -128,7 +128,7 @@ export default function CustomerDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -145,10 +145,10 @@ export default function CustomerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Upcoming Appointments</p>
-              <p className="text-3xl font-bold text-yellow-600">{stats?.upcomingAppointments || 0}</p>
+              <p className="text-3xl font-bold text-blue-600">{stats?.upcomingAppointments || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -157,10 +157,22 @@ export default function CustomerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Ongoing Projects</p>
-              <p className="text-3xl font-bold text-green-600">{stats?.ongoingProjects || 0}</p>
+              <p className="text-3xl font-bold text-blue-600">{stats?.ongoingProjects || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Briefcase className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Cancelled</p>
+              <p className="text-3xl font-bold text-red-600">{stats?.cancelledAppointments || 0}</p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <XCircle className="w-6 h-6 text-red-600" />
             </div>
           </div>
         </div>

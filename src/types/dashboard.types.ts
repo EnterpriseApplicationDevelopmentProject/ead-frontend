@@ -9,6 +9,7 @@ export interface DashboardStats {
   ongoingProjects: number;
   completedAppointments: number;
   completedProjects: number;
+  cancelledAppointments: number;
   totalAppointments: number;
   totalProjects: number;
 }

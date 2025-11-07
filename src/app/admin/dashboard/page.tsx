@@ -107,8 +107,9 @@ export default function AdminDashboard() {
   const getStatusColor = (status: string) => {
     const statusLower = status?.toLowerCase() || '';
     if (statusLower.includes('completed')) return 'text-green-600';
-    if (statusLower.includes('ongoing') || statusLower.includes('progress')) return 'text-blue-600';
-    if (statusLower.includes('pending') || statusLower.includes('upcoming')) return 'text-yellow-600';
+    if (statusLower.includes('in progress') || statusLower.includes('in_progress')) return 'text-orange-600';
+    if (statusLower.includes('assigned')) return 'text-blue-600';
+    if (statusLower.includes('requesting')) return 'text-yellow-600';
     if (statusLower.includes('cancelled')) return 'text-red-600';
     return 'text-gray-600';
   };

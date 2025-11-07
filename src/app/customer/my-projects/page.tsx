@@ -29,9 +29,7 @@ export default function MyProjects() {
       const allProjects = await projectService.getAllProjects();
       
       const ongoing = allProjects.filter(p => 
-        p.status.toLowerCase() === 'ongoing' || 
-        p.status.toLowerCase() === 'in progress' ||
-        p.status.toLowerCase() === 'pending'
+        p.status.toLowerCase() === 'assigned'
       );
       
       const completed = allProjects.filter(p => 
@@ -66,8 +64,8 @@ export default function MyProjects() {
       await projectService.createProject({
         taskName: newName,
         description: combinedDescription,
-        startDate: newStartDate,
-        status: 'Pending',
+        startDate: newStartDate
+        // status will be set to REQUESTING by backend automatically
       });
       // reset and refresh
       setNewName('');
