@@ -15,9 +15,13 @@ export default function VehicleCard({
 			className="bg-white rounded shadow p-4 cursor-pointer hover:shadow-md flex flex-col items-center"
 		>
 			<div className="w-full h-28 bg-gray-100 flex items-center justify-center overflow-hidden rounded">
-				{vehicle.image ? (
+				{(vehicle.imageUrl || vehicle.image) ? (
 					// eslint-disable-next-line @next/next/no-img-element
-					<img src={vehicle.image} alt={vehicle.model || vehicle.licensePlate} className="h-full object-cover" />
+					<img 
+						src={vehicle.imageUrl || vehicle.image} 
+						alt={vehicle.model || vehicle.licensePlate} 
+						className="w-full h-full object-cover" 
+					/>
 				) : (
 					<div className="text-sm text-gray-500">vehicle image</div>
 				)}
