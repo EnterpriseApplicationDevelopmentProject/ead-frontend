@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User, RefreshCw, XCircle } from 'lucide-react';
+import { Car, Calendar, Briefcase, Clock, MapPin, DollarSign, User, RefreshCw, XCircle ,MessageCircle} from 'lucide-react';
 import { dashboardService } from '@/lib/api/dashboardService';
 import { appointmentService, type Appointment } from '@/lib/api/appointmentService';
 import { projectService, type Project } from '@/lib/api/projectService';
 import type { DashboardStats } from '@/types/dashboard.types';
+import ChatbotWidget from '@/components/chat/ChatbotWidget';
 
 export default function CustomerDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -17,9 +18,24 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [customerId, setCustomerId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const raw = localStorage.getItem('auth_user');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const id = parsed?.id || parsed?.customerId || parsed?._id || null;
+          if (id) setCustomerId(String(id));
+        }
+      }
+    } catch (_) {}
   }, []);
 
   const loadDashboardData = async () => {
@@ -484,6 +500,41 @@ export default function CustomerDashboard() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Floating Chat Button */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        className="fixed bottom-6 right-6 z-40 h-12 w-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center hover:bg-blue-700"
+        aria-label="Open chat"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </button>
+
+      {/* Chat Popup Modal (kept mounted to preserve history) */}
+      <div
+        className={`fixed inset-0 z-50 transition-opacity ${isChatOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        aria-hidden={!isChatOpen}
+      >
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setIsChatOpen(false)}
+        />
+        <div className="absolute bottom-20 right-6 w-[360px] h-[520px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+            <div className="font-semibold text-gray-800">Assistant</div>
+            <button
+              onClick={() => setIsChatOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label="Close chat"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex-1 min-h-0">
+            <ChatbotWidget customerId={customerId ?? undefined} />
+          </div>
+        </div>
       </div>
     </div>
   );
