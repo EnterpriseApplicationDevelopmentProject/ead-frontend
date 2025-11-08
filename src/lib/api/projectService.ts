@@ -29,15 +29,15 @@ export interface Project {
 const mapProjectDtoToProject = (dto: ProjectDTO): Project => {
   // Map backend status enum to user-friendly status
   const statusMap: Record<string, string> = {
-    [ProjectStatus.PLANNED]: 'Pending',
-    [ProjectStatus.IN_PROGRESS]: 'Ongoing',
+    [ProjectStatus.REQUESTING]: 'Requesting',
+    [ProjectStatus.ASSIGNED]: 'Assigned',
+    [ProjectStatus.IN_PROGRESS]: 'In Progress',
     [ProjectStatus.COMPLETED]: 'Completed',
-    [ProjectStatus.CANCELLED]: 'Cancelled',
-    [ProjectStatus.ON_HOLD]: 'On Hold'
+    [ProjectStatus.CANCELLED]: 'Cancelled'
   };
 
   const backendStatus = typeof dto.status === 'string' ? dto.status.toUpperCase() : dto.status;
-  const friendlyStatus = statusMap[backendStatus] || 'Pending';
+  const friendlyStatus = statusMap[backendStatus] || dto.status;
 
   return {
     id: dto.projectId || '',
@@ -57,14 +57,14 @@ const mapProjectDtoToProject = (dto: ProjectDTO): Project => {
 const mapProjectToDto = (project: Partial<Project>): Partial<ProjectDTO> => {
   // Map friendly status back to backend enum
   const statusMap: Record<string, ProjectStatus> = {
-    'Pending': ProjectStatus.PLANNED,
-    'Ongoing': ProjectStatus.IN_PROGRESS,
+    'Requesting': ProjectStatus.REQUESTING,
+    'Assigned': ProjectStatus.ASSIGNED,
+    'In Progress': ProjectStatus.IN_PROGRESS,
     'Completed': ProjectStatus.COMPLETED,
-    'Cancelled': ProjectStatus.CANCELLED,
-    'On Hold': ProjectStatus.ON_HOLD
+    'Cancelled': ProjectStatus.CANCELLED
   };
 
-  const backendStatus = project.status ? statusMap[project.status] : ProjectStatus.PLANNED;
+  const backendStatus = project.status ? statusMap[project.status] : ProjectStatus.REQUESTING;
 
   return {
     projectId: project.id,
@@ -101,7 +101,7 @@ export const projectService = {
    */
   getOngoingProjects: async (customerId?: string): Promise<Project[]> => {
     const allProjects = await projectService.getCustomerProjects(customerId);
-    return allProjects.filter(p => p.status === 'Ongoing');
+    return allProjects.filter(p => p.status === 'In Progress');
   },
 
   /**

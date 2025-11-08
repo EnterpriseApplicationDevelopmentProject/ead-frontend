@@ -31,19 +31,19 @@ export default function MyProjects() {
       const allProjects = await projectService.getAllProjects();
       
       const requesting = allProjects.filter(p => 
-        p.status.toLowerCase() === 'requesting'
+        p.status === 'Requesting'
       );
       
       const upcoming = allProjects.filter(p => 
-        p.status.toLowerCase() === 'assigned'
+        p.status === 'Assigned'
       );
       
       const ongoing = allProjects.filter(p => 
-        p.status.toLowerCase() === 'in_progress' || p.status.toLowerCase() === 'in progress'
+        p.status === 'In Progress'
       );
       
       const completed = allProjects.filter(p => 
-        p.status.toLowerCase() === 'completed'
+        p.status === 'Completed'
       );
 
       setRequestingProjects(requesting);
@@ -202,6 +202,12 @@ export default function MyProjects() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Requesting Projects</h2>
+          <button
+              onClick={() => setShowNewForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              + New Project
+            </button>
         </div>
 
         {requestingProjects.length === 0 ? (
@@ -297,12 +303,6 @@ export default function MyProjects() {
         {!showNewForm && (
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Ongoing Projects</h2>
-            <button
-              onClick={() => setShowNewForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              + New Project
-            </button>
           </div>
         )}
 
