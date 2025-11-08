@@ -34,11 +34,15 @@ export const dashboardService = {
       // Vehicle API already returns only customer's vehicles
       const totalVehicles = vehicles.length;
 
-      // Calculate stats
+      // Calculate stats - includes backward compatibility for old status values
       const upcomingAppointments = customerAppointments.filter(
-        a => a.status.toLowerCase() === 'upcoming' || 
-             a.status.toLowerCase() === 'pending' ||
-             a.status.toLowerCase() === 'approved'
+        a => {
+          const statusLower = a.status.toLowerCase();
+          return statusLower === 'assigned' || 
+                 statusLower === 'upcoming' || 
+                 statusLower === 'pending' || 
+                 statusLower === 'approved';
+        }
       ).length;
 
       const completedAppointments = customerAppointments.filter(
@@ -48,15 +52,20 @@ export const dashboardService = {
       const ongoingProjects = customerProjects.filter(
         p => {
           const statusLower = p.status.toLowerCase();
-          return statusLower === 'ongoing' || 
+          return statusLower === 'assigned' || 
+                 statusLower === 'ongoing' || 
+                 statusLower === 'pending' ||
                  statusLower === 'in progress' ||
-                 statusLower === 'in_progress' ||
-                 statusLower === 'pending';
+                 statusLower === 'in_progress';
         }
       ).length;
 
       const completedProjects = customerProjects.filter(
         p => p.status.toLowerCase() === 'completed'
+      ).length;
+
+      const cancelledAppointments = customerAppointments.filter(
+        a => a.status.toLowerCase() === 'cancelled'
       ).length;
 
       return {
@@ -65,6 +74,7 @@ export const dashboardService = {
         ongoingProjects,
         completedAppointments,
         completedProjects,
+        cancelledAppointments,
         totalAppointments: customerAppointments.length,
         totalProjects: customerProjects.length
       };
@@ -77,6 +87,7 @@ export const dashboardService = {
         ongoingProjects: 0,
         completedAppointments: 0,
         completedProjects: 0,
+        cancelledAppointments: 0,
         totalAppointments: 0,
         totalProjects: 0
       };
@@ -96,9 +107,7 @@ export const dashboardService = {
       return filtered
         .filter(a => {
           const statusLower = a.status.toLowerCase();
-          return statusLower === 'upcoming' || 
-                 statusLower === 'pending' ||
-                 statusLower === 'approved';
+          return statusLower === 'assigned';
         })
         .slice(0, limit);
     } catch (error) {
@@ -124,10 +133,7 @@ export const dashboardService = {
       const ongoing = filtered.filter(p => {
         const statusLower = p.status.toLowerCase();
         console.log('Project:', p.taskName, 'status:', p.status, 'lowercase:', statusLower); // Debug log
-        return statusLower === 'ongoing' || 
-               statusLower === 'in progress' ||
-               statusLower === 'in_progress' ||
-               statusLower === 'pending';
+        return statusLower === 'assigned';
       });
       
       console.log('Ongoing projects:', ongoing); // Debug log

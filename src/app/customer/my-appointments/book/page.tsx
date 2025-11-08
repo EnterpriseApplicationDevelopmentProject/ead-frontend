@@ -205,8 +205,8 @@ export default function BookAppointmentPage() {
       vehicleId: vehicleObj.id.toString(),
       date: selectedDate, // Already in YYYY-MM-DD format from date picker
       startTime: start24,
-      endTime: end24,
-      status: 'UPCOMING' // Must match AppointmentStatus enum: UPCOMING, COMPLETED, or CANCELLED
+      endTime: end24
+      // status will be set to REQUESTING by backend automatically
       // customerId will be set by backend from authenticated user
     };
 
