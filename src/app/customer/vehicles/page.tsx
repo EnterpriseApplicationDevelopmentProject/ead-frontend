@@ -15,20 +15,30 @@ export default function MyVehiclesPage() {
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Load all vehicles on mount
   useEffect(() => {
     loadVehicles();
   }, []);
 
+  // Debug: Log selected vehicle changes
+  useEffect(() => {
+    console.log('Selected vehicle changed:', selected);
+  }, [selected]);
+
   const loadVehicles = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await vehicleApi.getAllVehicles();
+      console.log('Loaded vehicles:', data);
       setVehicles(data);
-      if (data.length > 0 && !selected) {
+      // Auto-select first vehicle only on initial load
+      if (isInitialLoad && data.length > 0) {
+        console.log('Auto-selecting first vehicle:', data[0]);
         setSelected(data[0]);
+        setIsInitialLoad(false);
       }
     } catch (err: any) {
       console.error("Failed to load vehicles:", err);
@@ -155,20 +165,22 @@ export default function MyVehiclesPage() {
         <VehicleList vehicles={vehicles} onSelect={setSelected} onAdd={handleAddClick} />
       </div>
 
-      <div className="border-t pt-6 space-y-6">
-        <div className=" gap-6">
-          <div className="lg:col-span-1">
-            <VehicleDetails 
-              vehicle={selected} 
-              onEdit={handleEditClick}
-              onDelete={handleDelete}
-            />
-          </div>
-          <div className="lg:col-span-2">
-            
+      {!loading && (
+        <div className="border-t pt-6 space-y-6">
+          <div className=" gap-6">
+            <div className="lg:col-span-1">
+              <VehicleDetails 
+                vehicle={selected} 
+                onEdit={handleEditClick}
+                onDelete={handleDelete}
+              />
+            </div>
+            <div className="lg:col-span-2">
+              
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

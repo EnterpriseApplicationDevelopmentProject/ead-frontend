@@ -3,16 +3,12 @@
 import { useState, useEffect } from 'react';
 import { 
   Clock, 
-  Play, 
-  Pause, 
   CheckCircle, 
   ClipboardList
 } from 'lucide-react';
 import { AppointmentProgress, ProgressUpdate, TimeLog } from '@/types/progress.types';
 import {
   getEmployeeAppointments,
-  startTimer,
-  pauseTimer,
   logTime,
   updateProgress,
   type Appointment
@@ -71,7 +67,7 @@ function UpdateStatusModal({
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Stage
+              Status
             </label>
             <select
               value={stage}
@@ -79,10 +75,8 @@ function UpdateStatusModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Select stage</option>
-              <option value="not started">Not Started</option>
+              <option value="">Select status</option>
               <option value="in progress">In Progress</option>
-              <option value="paused">Paused</option>
               <option value="completed">Completed</option>
             </select>
           </div>
@@ -237,23 +231,25 @@ function LogTimeModal({
 // Service Card Component
 function ServiceProgressCard({ 
   appointment, 
-  onTimerToggle, 
   onLogTime, 
   onUpdateStatus 
 }: {
   appointment: AppointmentProgress;
-  onTimerToggle: (id: number | string) => void;
   onLogTime: (appointment: AppointmentProgress) => void;
   onUpdateStatus: (appointment: AppointmentProgress) => void;
 }) {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'in progress':
-        return 'bg-green-500';
-      case 'paused':
+      case 'requesting':
         return 'bg-yellow-500';
-      case 'completed':
+      case 'assigned':
         return 'bg-blue-500';
+      case 'in progress':
+        return 'bg-orange-500';
+      case 'completed':
+        return 'bg-green-500';
+      case 'cancelled':
+        return 'bg-red-500';
       default:
         return 'bg-gray-400';
     }
@@ -316,40 +312,20 @@ function ServiceProgressCard({
       {/* Action Buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onTimerToggle(appointment.appointmentId)}
-          className={`flex-1 px-4 py-2 rounded-md text-white font-medium transition flex items-center justify-center gap-2 ${
-            appointment.timerRunning 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-green-500 hover:bg-green-600'
-          }`}
-        >
-          {appointment.timerRunning ? (
-            <>
-              <Pause className="w-4 h-4" />
-              Pause
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              Start
-            </>
-          )}
-        </button>
-
-        <button
           onClick={() => onLogTime(appointment)}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition flex items-center justify-center gap-2"
           title="Log Time"
         >
           <Clock className="w-4 h-4" />
+          Log Time
         </button>
 
         <button
           onClick={() => onUpdateStatus(appointment)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2"
         >
           <CheckCircle className="w-4 h-4" />
-          Update
+          Update Status
         </button>
       </div>
     </div>
@@ -419,38 +395,6 @@ export default function EmployeeProgressPage() {
   useEffect(() => {
     fetchAppointments();
   }, []);
-
-  // Timer toggle handler
-  const handleTimerToggle = async (appointmentId: number | string) => {
-    const appointment = appointments.find(a => a.appointmentId === appointmentId);
-    if (!appointment) return;
-
-    const isStarting = !appointment.timerRunning;
-    
-    try {
-      if (isStarting) {
-        await startTimer(appointmentId);
-      } else {
-        await pauseTimer(appointmentId);
-      }
-
-      // Optimistic update
-      setAppointments(prev =>
-        prev.map(a =>
-          a.appointmentId === appointmentId
-            ? { 
-                ...a, 
-                timerRunning: isStarting, 
-                status: isStarting ? 'in progress' : 'paused' 
-              }
-            : a
-        )
-      );
-    } catch (err) {
-      console.error(`Error ${isStarting ? 'starting' : 'pausing'} timer:`, err);
-      alert(`Failed to ${isStarting ? 'start' : 'pause'} timer. Please try again.`);
-    }
-  };
 
   // Log time handler
   const handleLogTime = async (data: TimeLog) => {
@@ -543,7 +487,6 @@ export default function EmployeeProgressPage() {
               <ServiceProgressCard
                 key={appointment.appointmentId}
                 appointment={appointment}
-                onTimerToggle={handleTimerToggle}
                 onLogTime={(apt) => {
                   setSelectedAppointment(apt);
                   setShowLogTimeModal(true);

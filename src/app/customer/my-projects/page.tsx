@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { projectService, type Project } from '@/lib/api/projectService';
 
 export default function MyProjects() {
+  const [requestingProjects, setRequestingProjects] = useState<Project[]>([]);
+  const [upcomingProjects, setUpcomingProjects] = useState<Project[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Project[]>([]);
   const [completedProjects, setCompletedProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,16 +30,24 @@ export default function MyProjects() {
       // Fetch all projects and filter locally
       const allProjects = await projectService.getAllProjects();
       
+      const requesting = allProjects.filter(p => 
+        p.status.toLowerCase() === 'requesting'
+      );
+      
+      const upcoming = allProjects.filter(p => 
+        p.status.toLowerCase() === 'assigned'
+      );
+      
       const ongoing = allProjects.filter(p => 
-        p.status.toLowerCase() === 'ongoing' || 
-        p.status.toLowerCase() === 'in progress' ||
-        p.status.toLowerCase() === 'pending'
+        p.status.toLowerCase() === 'in_progress' || p.status.toLowerCase() === 'in progress'
       );
       
       const completed = allProjects.filter(p => 
         p.status.toLowerCase() === 'completed'
       );
 
+      setRequestingProjects(requesting);
+      setUpcomingProjects(upcoming);
       setOngoingProjects(ongoing);
       setCompletedProjects(completed);
     } catch (error) {
@@ -66,8 +76,8 @@ export default function MyProjects() {
       await projectService.createProject({
         taskName: newName,
         description: combinedDescription,
-        startDate: newStartDate,
-        status: 'Pending',
+        startDate: newStartDate
+        // status will be set to REQUESTING by backend automatically
       });
       // reset and refresh
       setNewName('');
@@ -130,7 +140,49 @@ export default function MyProjects() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Requesting Projects</p>
+              <p className="text-3xl font-bold text-yellow-600">{requestingProjects.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Upcoming Projects</p>
+              <p className="text-3xl font-bold text-blue-600">{upcomingProjects.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Ongoing Projects</p>
+              <p className="text-3xl font-bold text-orange-600">{ongoingProjects.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -144,20 +196,100 @@ export default function MyProjects() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Ongoing Projects</p>
-              <p className="text-3xl font-bold text-yellow-600">{ongoingProjects.length}</p>
-            </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+      {/* Requesting Projects Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Requesting Projects</h2>
+        </div>
+
+        {requestingProjects.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="text-gray-600">No requesting projects</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Model</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {requestingProjects.map((project) => (
+                    <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-900">{project.id}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{project.taskName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                          {project.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Upcoming Projects Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Upcoming Projects</h2>
         </div>
+
+        {upcomingProjects.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-gray-600">No upcoming projects</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Model</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {upcomingProjects.map((project) => (
+                    <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-900">{project.id}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{project.taskName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{getVehicleModel(project)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatDate(project.startDate)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {project.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Ongoing Projects Section */}

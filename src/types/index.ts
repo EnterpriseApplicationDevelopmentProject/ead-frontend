@@ -5,15 +5,18 @@
 // Customer Types
 export interface Customer {
   id: string;
+  userId?: number; // Backend user ID
   name: string;
   firstName?: string;
   lastName?: string;
   email: string;
   phone: string;
+  phoneNumber?: string; // Backend uses phoneNumber
   address?: string;
   nic?: string;
   password?: string;
   joinedDate: string;
+  photo?: string; // Profile photo URL or base64
 }
 
 // Vehicle Types
