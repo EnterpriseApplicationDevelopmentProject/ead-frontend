@@ -30,7 +30,10 @@ export default function EmployeeDashboard() {
 
   // Calculate stats
   const totalAppointments = appointments.length;
-  const inProgress = appointments.filter(a => a.status?.toLowerCase() === 'in progress').length;
+  const inProgress = appointments.filter(a => {
+    const status = a.status?.toLowerCase().replace('_', ' ');
+    return status === 'in progress';
+  }).length;
   const completedToday = appointments.filter(a => a.status?.toLowerCase() === 'completed').length;
 
   const getStatusBadge = (status?: string) => {

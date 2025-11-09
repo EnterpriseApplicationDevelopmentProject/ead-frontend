@@ -193,13 +193,16 @@ export default function AdminAppointmentsPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Upcoming</div>
           <div className="text-2xl font-bold text-blue-600">
-            {appointments.filter(a => a.status === 'Upcoming').length}
+            {appointments.filter(a => {
+              const status = a.status?.toUpperCase();
+              return status === 'REQUESTING' || status === 'ASSIGNED' || status === 'IN_PROGRESS';
+            }).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Completed</div>
           <div className="text-2xl font-bold text-green-600">
-            {appointments.filter(a => a.status === 'Completed').length}
+            {appointments.filter(a => a.status?.toUpperCase() === 'COMPLETED').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">

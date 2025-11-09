@@ -194,19 +194,22 @@ export default function AdminProjectsPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Pending</div>
           <div className="text-2xl font-bold text-yellow-600">
-            {projects.filter(p => p.status === 'Pending').length}
+            {projects.filter(p => {
+              const status = p.status?.toUpperCase();
+              return status === 'REQUESTING' || status === 'ASSIGNED';
+            }).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Ongoing</div>
           <div className="text-2xl font-bold text-blue-600">
-            {projects.filter(p => p.status === 'Ongoing').length}
+            {projects.filter(p => p.status?.toUpperCase() === 'IN_PROGRESS').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-gray-600 mb-1">Completed</div>
           <div className="text-2xl font-bold text-green-600">
-            {projects.filter(p => p.status === 'Completed').length}
+            {projects.filter(p => p.status?.toUpperCase() === 'COMPLETED').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
