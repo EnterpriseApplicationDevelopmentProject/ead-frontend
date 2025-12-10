@@ -7,7 +7,7 @@ import { projectService, type Project } from '@/lib/api/projectService';
 export default function MyProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'requesting' | 'assigned' | 'inprogress' | 'completed'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'requesting' | 'assigned' | 'inprogress' | 'completed' | 'cancelled'>('all');
   const [error, setError] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -107,6 +107,7 @@ export default function MyProjects() {
     if (activeTab === 'assigned') return status === 'assigned';
     if (activeTab === 'inprogress') return status === 'in progress' || status === 'in_progress';
     if (activeTab === 'completed') return status === 'completed';
+    if (activeTab === 'cancelled') return status === 'cancelled';
     return true;
   });
 
@@ -117,6 +118,7 @@ export default function MyProjects() {
     return s === 'in progress' || s === 'in_progress';
   }).length;
   const completedCount = projects.filter(p => p.status.toLowerCase() === 'completed').length;
+  const cancelledCount = projects.filter(p => p.status.toLowerCase() === 'cancelled').length;
 
   if (loading) {
     return (
@@ -128,6 +130,24 @@ export default function MyProjects() {
       </div>
     );
   }
+
+  const handleCancel = async (id: string | number) => {
+    if (!confirm('Are you sure you want to cancel this project?')) return;
+    try {
+      // optimistic UI update: mark project as cancelled locally
+      setProjects(prev => prev.map(p => (p.id === id ? { ...p, status: 'cancelled' } : p)));
+      // if backend supports cancelling, call it and refresh
+      if (projectService && typeof (projectService as any).cancelProject === 'function') {
+        await (projectService as any).cancelProject(id);
+        await loadProjects();
+      }
+    } catch (err) {
+      console.error('Failed to cancel project', err);
+      // revert to server state on error
+      await loadProjects();
+      alert('Failed to cancel project. Please try again.');
+    }
+  };
 
   return (
     <div>
@@ -219,7 +239,7 @@ export default function MyProjects() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -264,6 +284,18 @@ export default function MyProjects() {
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Cancelled</p>
+              <p className="text-3xl font-bold text-red-600">{cancelledCount}</p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <XCircle className="w-6 h-6 text-red-600" />
             </div>
           </div>
         </div>
@@ -323,6 +355,16 @@ export default function MyProjects() {
             >
               Completed ({completedCount})
             </button>
+            <button
+              onClick={() => setActiveTab('cancelled')}
+              className={`px-6 py-4 font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'cancelled'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Cancelled ({cancelledCount})
+            </button>
           </div>
         </div>
       </div>
@@ -345,8 +387,11 @@ export default function MyProjects() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Progress
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 pl-28 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
                 </th>
               </tr>
             </thead>
@@ -359,57 +404,81 @@ export default function MyProjects() {
                     {activeTab === 'assigned' && 'No assigned projects'}
                     {activeTab === 'inprogress' && 'No projects in progress'}
                     {activeTab === 'completed' && 'No completed projects'}
+                    {activeTab === 'cancelled' && 'No cancelled projects'}
                   </td>
                 </tr>
               ) : (
-                filteredProjects.map((project) => (
-                  <tr key={project.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {project.taskName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
-                        {project.description}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          {formatDate(project.startDate)}
+                filteredProjects.map((project) => {
+                  const statusLower = (project.status || '').toLowerCase();
+                  const progress = project.progressPercentage ?? 0;
+                  return (
+                    <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {project.taskName}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="w-full max-w-xs">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700">
-                            {project.progressPercentage ?? 0}%
-                          </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                          {project.description}
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all duration-500 ${
-                              (project.progressPercentage ?? 0) === 100
-                                ? 'bg-green-600'
-                                : (project.progressPercentage ?? 0) > 50
-                                ? 'bg-blue-600'
-                                : 'bg-yellow-500'
-                            }`}
-                            style={{ width: `${project.progressPercentage ?? 0}%` }}
-                          ></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            {formatDate(project.startDate)}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(project.status)}`}>
-                        {project.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="w-full max-w-xs">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-700">
+                              {progress}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              style={{ width: `${progress}%` }}
+                              className={`h-2 rounded-full transition-all duration-500 ${progress === 100 ? 'bg-green-600' : 'bg-blue-600'}`}
+                            />
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4  text-sm font-medium">
+                        <div className="flex items-center justify-center gap-4">
+                          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(project.status)}`}>
+                            {project.status}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {(() => {
+                            const statusLower = project.status.toLowerCase();
+                            
+                            // Cancel button - show ONLY for REQUESTING or assigned status (before in progress)
+                            if (statusLower === 'requesting' || statusLower === 'assigned') {
+                              return (
+                                <button
+                                  onClick={() => handleCancel(project.id)}
+                                  className="text-red-600 hover:text-red-900 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              );
+                            }
+
+                            // No actions for completed or cancelled or in-progress appointments
+                            return <span className="text-gray-400 text-sm">-</span>;
+                          })()}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

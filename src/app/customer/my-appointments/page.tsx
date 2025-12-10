@@ -330,8 +330,8 @@ export default function MyAppointments() {
                         {(() => {
                           const statusLower = appointment.status.toLowerCase();
                           
-                          // Cancel button - show ONLY for REQUESTING status (before assignment)
-                          if (statusLower === 'requesting') {
+                          // Cancel button - show ONLY for REQUESTING or assigned status (before in progress)
+                          if (statusLower === 'requesting' || statusLower === 'assigned') {
                             return (
                               <button
                                 onClick={() => handleCancel(appointment.id)}
