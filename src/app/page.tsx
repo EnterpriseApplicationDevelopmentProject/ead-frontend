@@ -91,19 +91,19 @@ export default function Home() {
           {/* Right Side - Car Image and Service Cards */}
           <div className="hidden lg:block relative flex-1 max-w-4xl mr-12">
             {/* Main Car Image */}
-            <div className="relative w-[900px] h-[500px] border: border-radius-lg shadow-2xl mx-auto">
+            <div className="relative w-[900px] h-[500px] border: border-radius-lg shadow-[0_35px_60px_-15px_rgba(0,0,0,0.8)] mx-auto">
               <Image
                 src="/main-car-image.png"
                 alt="Luxury Car"
                 fill
-                className="object-contain"
+                className="object-contain drop-shadow-2xl"
                 priority
               />
             </div>
 
             {/* Service Image Cards at bottom */}
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-4">
-              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 ">
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)] hover:scale-105 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] transition-all">
                 <Image
                   src="/service-1.jpg"
                   alt="Service 1"
@@ -112,7 +112,7 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)] hover:scale-105 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] transition-all">
                 <Image
                   src="/service-2.jpg"
                   alt="Service 2"
@@ -121,7 +121,7 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6)] hover:scale-105 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)] transition-all">
                 <Image
                   src="/service-3.jpg"
                   alt="Service 3"
