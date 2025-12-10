@@ -51,9 +51,25 @@ export default function Home() {
             </div>
 
             {/* Description */}
-            <p className="text-white text-base md:text-lg mb-10 md:mb-12 leading-relaxed max-w-lg">
+            <p className="text-white text-base md:text-lg mb-6 md:mb-8 leading-relaxed max-w-lg">
               From routine oil changes to complex repairs, our certified mechanics keep your car running smoothly and safely on the road in their safety Town
             </p>
+
+            {/* Contact Info & Hours */}
+            <div className="mb-8 md:mb-10 flex flex-col gap-3">
+              <div className="flex items-center gap-3 text-white">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                </svg>
+                <span className="font-semibold text-base md:text-lg"> 0112 250 250 / 0112 350 350</span>
+              </div>
+              <div className="flex items-center gap-3 text-white">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"/>
+                </svg>
+                <span className="font-semibold text-base md:text-lg"> Open: Mon-Sat  8:00 AM - 8:00 PM</span>
+              </div>
+            </div>
 
             {/* CTA Buttons */}
             <div className="flex gap-4 md:gap-6">
