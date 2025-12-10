@@ -57,9 +57,9 @@ export default function Home() {
           </div>
 
           {/* Right Side - Car Image and Service Cards */}
-          <div className="hidden lg:block relative flex-1 max-w-3xl">
+          <div className="hidden lg:block relative flex-1 max-w-4xl mr-12">
             {/* Main Car Image */}
-            <div className="relative w-full h-[500px]">
+            <div className="relative w-[900px] h-[500px] border: border-radius-lg shadow-2xl mx-auto">
               <Image
                 src="/main-car-image.png"
                 alt="Luxury Car"
@@ -71,7 +71,7 @@ export default function Home() {
 
             {/* Service Image Cards at bottom */}
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-4">
-              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 ">
                 <Image
                   src="/service-1.jpg"
                   alt="Service 1"
