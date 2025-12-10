@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -57,26 +58,45 @@ export default function Home() {
 
           {/* Right Side - Car Image and Service Cards */}
           <div className="hidden lg:block relative flex-1 max-w-3xl">
-            {/* Placeholder for car - you can replace this with actual car SVG or image */}
+            {/* Main Car Image */}
             <div className="relative w-full h-[500px]">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="w-[600px] h-[300px] bg-gray-600 rounded-[100px] opacity-40"></div>
-              </div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-6xl opacity-30">
-                🚗
-              </div>
+              <Image
+                src="/main-car-image.png"
+                alt="Luxury Car"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
 
             {/* Service Image Cards at bottom */}
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-4">
-              <div className="w-32 h-24 bg-white/20 backdrop-blur-sm rounded-lg border-4 border-white/40 flex items-center justify-center">
-                <span className="text-4xl">🔧</span>
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+                <Image
+                  src="/service-1.jpg"
+                  alt="Service 1"
+                  width={128}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="w-32 h-24 bg-white/20 backdrop-blur-sm rounded-lg border-4 border-white/40 flex items-center justify-center">
-                <span className="text-4xl">🛠️</span>
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+                <Image
+                  src="/service-2.jpg"
+                  alt="Service 2"
+                  width={128}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="w-32 h-24 bg-white/20 backdrop-blur-sm rounded-lg border-4 border-white/40 flex items-center justify-center">
-                <span className="text-4xl">⚙️</span>
+              <div className="w-32 h-24 rounded-lg border-4 border-white/60 overflow-hidden shadow-xl hover:scale-105 transition-transform">
+                <Image
+                  src="/service-3.jpg"
+                  alt="Service 3"
+                  width={128}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
