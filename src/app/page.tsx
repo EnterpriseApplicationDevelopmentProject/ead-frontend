@@ -8,9 +8,25 @@ export default function Home() {
       <div className="relative z-20 h-full flex flex-col">
         {/* Top Section - Logo */}
         <div className="px-6 md:px-12 pt-6 md:pt-8">
-          <div className="text-white text-sm md:text-base font-semibold">
-            <p>LOGO</p>
-            <p>HERE</p>
+          <div className="flex items-center gap-3">
+            {/* Logo Icon */}
+            <div className="relative">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-red-600 rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
+                <div className="text-white font-black text-xl md:text-2xl">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-8 md:h-8">
+                    <path d="M8 24C8 24 10 22 13 22C16 22 18 24 21 24C24 24 26 22 29 22C32 22 34 24 34 24V28C34 28 32 26 29 26C26 26 24 28 21 28C18 28 16 26 13 26C10 26 8 28 8 28V24Z" fill="white"/>
+                    <path d="M10 12H30L32 18H8L10 12Z" fill="white"/>
+                    <ellipse cx="13" cy="18" rx="2" ry="2" fill="white"/>
+                    <ellipse cx="27" cy="18" rx="2" ry="2" fill="white"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            {/* Logo Text */}
+            <div className="text-white">
+              <p className="font-black text-lg md:text-xl leading-tight">EXPERT</p>
+              <p className="font-black text-lg md:text-xl leading-tight text-red-500">AUTO CARE</p>
+            </div>
           </div>
         </div>
 
