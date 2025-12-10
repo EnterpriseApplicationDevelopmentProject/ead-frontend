@@ -83,8 +83,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Decorative Diamond - Bottom Right */}
-      <div className="absolute bottom-10 right-10 md:bottom-16 md:right-16 w-16 h-16 md:w-20 md:h-20 bg-white transform rotate-45 z-30 opacity-90"></div>
+      
     </div>
   );
 }
